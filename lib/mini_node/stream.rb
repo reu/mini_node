@@ -22,12 +22,12 @@ module MiniNode
     def write(data)
       bytes_written = @fd.write_nonblock(data)
       @write_buffer = data[bytes_written..-1]
+      emit(:drain) if @write_buffer == ""
     rescue Errno::EAGAIN, Errno::EPIPE
     end
 
     def close
-      emit(:close)
-      @fd.close
+      @write_buffer == "" ? close_fd : once(:drain) { close_fd }
     end
 
     def to_io
@@ -40,6 +40,13 @@ module MiniNode
 
     def to_s
       "#<#{self.class}:#{@fd.fileno}>"
+    end
+
+    private
+
+    def close_fd
+      emit(:close)
+      @fd.close
     end
   end
 end
