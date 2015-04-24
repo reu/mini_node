@@ -17,8 +17,9 @@ MiniNode::Reactor.loop do |reactor|
           file = reactor.open(path)
 
           client.write("HTTP/1.1 200 Ok\r\n")
-          client.write("Content-Type: text/plain; charset=utf-8\r\n")
+          client.write("Content-Type: #{file.content_type || "application/octet-stream"}; charset=utf-8\r\n")
           client.write("Content-Length: #{file.size}\r\n")
+          client.write("Connection: close\r\n")
           client.write("\r\n")
 
           file.on(:data) do |data|
@@ -30,12 +31,12 @@ MiniNode::Reactor.loop do |reactor|
           end
         rescue Errno::ENOENT
           client.write("HTTP/1.1 404 Not found\r\n")
-          client.write("\r\n\r\n")
+          client.write("Connection: close\r\n")
           client.close
         end
       else
         client.write("HTTP/1.1 405 Method not allowed\r\n")
-        client.write("\r\n\r\n")
+        client.write("Connection: close\r\n")
         client.close
       end
     end
