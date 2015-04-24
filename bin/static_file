@@ -17,7 +17,7 @@ MiniNode::Reactor.loop do |reactor|
           file = reactor.open(path)
 
           client.write("HTTP/1.1 200 Ok\r\n")
-          client.write("Content-Type: text/xml; charset=utf-8\r\n")
+          client.write("Content-Type: text/plain; charset=utf-8\r\n")
           client.write("Content-Length: #{file.size}\r\n")
           client.write("\r\n")
 
