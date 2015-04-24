@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "mini_node"
+require "mini_node/nio/reactor"
+require "mini_node/redis/client"
+require "pry"
+
+def reactor(reactor = @reactor || MiniNode::Reactor.new)
+  @reactor = reactor
+end
+
+Pry.start

@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "mini_node"
+require "mini_node/redis/client"
+
+MiniNode::Reactor.loop do |reactor|
+  client = MiniNode::Redis::Client.new(reactor.connect("localhost", 6379))
+
+  client.set("mini_node", "cool") do
+    client.get("mini_node") do |before|
+      client.del("mini_node") do
+        client.get("mini_node") do |after|
+          puts "MiniNode was #{before}, now it is #{after || "nothing"}"
+        end
+      end
+    end
+  end
+end

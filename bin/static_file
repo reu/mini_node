@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "mini_node"
+require "http/parser"
+
+MiniNode::Reactor.loop do |reactor|
+  server = reactor.listen("0.0.0.0", 4000)
+
+  server.on(:accept) do |client|
+    parser = Http::Parser.new
+
+    parser.on_message_complete = proc do |env|
+      if parser.http_method == "GET"
+        begin
+          path = File.join(File.dirname(__FILE__), parser.request_url)
+          file = reactor.open(path)
+
+          client.write("HTTP/1.1 200 Ok\r\n")
+          client.write("Content-Type: text/xml; charset=utf-8\r\n")
+          client.write("Content-Length: #{file.size}\r\n")
+          client.write("\r\n")
+
+          file.on(:data) do |data|
+            client.write(data)
+          end
+
+          file.on(:close) do
+            client.close
+          end
+        rescue Errno::ENOENT
+          client.write("HTTP/1.1 404 Not found\r\n")
+          client.write("\r\n\r\n")
+          client.close
+        end
+      else
+        client.write("HTTP/1.1 405 Method not allowed\r\n")
+        client.write("\r\n\r\n")
+        client.close
+      end
+    end
+
+    client.on(:data) do |data|
+      parser << data
+    end
+  end
+end
