@@ -17,7 +17,7 @@ module MiniNode
       monitor(server)
 
       server.on(:accept) do |client|
-        register(client)
+        monitor(client)
       end
 
       server
@@ -58,7 +58,7 @@ module MiniNode
       readable, writeable, _ = IO.select(@reading, @writing, [])
 
       readable.each(&:handle_read) if readable
-      readable.each(&:handle_write) if writeable
+      writeable.each(&:handle_write) if writeable
     end
 
     def self.loop
