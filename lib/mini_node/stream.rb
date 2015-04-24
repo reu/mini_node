@@ -30,6 +30,11 @@ module MiniNode
       @write_buffer == "" ? close_fd : once(:drain) { close_fd }
     end
 
+    def pipe(stream)
+      on(:data) { |data| stream.write(data) }
+      on(:close) { stream.close }
+    end
+
     def to_io
       @fd
     end
