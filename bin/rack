@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "rack/builder"
+
+require "mini_node/reactor"
+require "rack/handler/mini_node"
+
+reactor = MiniNode::Reactor.new
+
+class FileServer
+  def initialize(reactor, root_dir)
+    @reactor = reactor
+    @root_dir = root_dir
+  end
+
+  def call(env)
+    [200, { "Content-Type" => "text/plain" }, ["Hello world"]]
+  end
+end
+
+builder = Rack::Builder.new do
+  use Rack::CommonLogger
+  run FileServer.new(reactor, File.dirname(__FILE__))
+end
+
+Rack::Handler::MiniNode.run builder, reactor
