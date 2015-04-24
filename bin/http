@@ -3,7 +3,6 @@
 require "bundler/setup"
 require "mini_node"
 require "http/parser"
-require "pry"
 
 MiniNode::Reactor.loop do |reactor|
   server = reactor.listen("0.0.0.0", 4000)
@@ -12,11 +11,14 @@ MiniNode::Reactor.loop do |reactor|
     parser = Http::Parser.new
 
     parser.on_message_complete = proc do |env|
-      binding.pry
-      client.write("HTTP/1.1 204 No Content\r\n")
-      client.write("Content-Type: text/xml; charset=utf-8\r\n")
-      client.write("Content-Length: 0\r\n")
-      client.write("\r\n\r\n")
+      hello = "Hello World"
+
+      client.write("HTTP/1.1 200 Ok\r\n")
+      client.write("Content-Type: text/plain; charset=utf-8\r\n")
+      client.write("Content-Length: #{hello.bytesize}\r\n")
+      client.write("\r\n")
+      client.write(hello)
+
       client.close
     end
 
