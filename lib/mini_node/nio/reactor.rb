@@ -16,6 +16,10 @@ module MiniNode
         when Stream
           @selector.register(stream, :rw)
         end
+
+        stream.on(:close) do
+          @selector.deregister(stream)
+        end
       end
 
       def stop
