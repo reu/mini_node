@@ -2,10 +2,10 @@
 
 require "bundler/setup"
 require "mini_node"
-require "mini_node/http_server"
+require "mini_node/http"
 
 MiniNode::Reactor.loop do |reactor|
-  server = MiniNode::HttpServer.new(reactor.listen("0.0.0.0", ENV.fetch("PORT", 4000)))
+  server = MiniNode::HTTP::Server.new(reactor.listen("0.0.0.0", ENV.fetch("PORT", 4000)))
 
   server.on(:request) do |req, res|
     if req.get? || req.head?

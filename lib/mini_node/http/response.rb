@@ -1,32 +1,8 @@
-require "socket"
-
-require "http/parser"
-
-require "mini_node/event_emitter"
-require "mini_node/stream"
-require "mini_node/file"
-require "mini_node/server"
-
 module MiniNode
-  class HttpServer
-    include EventEmitter
-
-    CRLF = "\r\n"
-
-    class Request
-      attr_accessor :verb
-      attr_accessor :path
-      attr_accessor :headers
-      attr_accessor :body
-
-      %w(get post put patch delete head options).each do |verb|
-        define_method(verb + "?") do
-          self.verb.to_s.downcase == verb
-        end
-      end
-    end
-
+  module HTTP
     class Response
+      CRLF = "\r\n"
+
       STATUS_MESSAGES = {
         200 => "OK",
         201 => "Created",
@@ -109,34 +85,6 @@ module MiniNode
           "Connection": "close",
           "Date": Time.now.gmtime.strftime("%a, %e %b %Y %H:%M:%S %Z")
         }
-      end
-    end
-
-    def initialize(server)
-      server.on(:accept) do |client|
-        parser = Http::Parser.new
-
-        request = Request.new
-        request.body = ""
-
-        parser.on_headers_complete = proc do
-          request.verb = parser.http_method
-          request.path = parser.request_url
-          request.headers = parser.headers
-        end
-
-        parser.on_body = proc do |chunk|
-          request.body << chunk
-        end
-
-        parser.on_message_complete = proc do |env|
-          response = Response.new(client)
-          emit(:request, request, response)
-        end
-
-        client.on(:data) do |data|
-          parser << data
-        end
       end
     end
   end
