@@ -11,6 +11,10 @@ module MiniNode
           self.verb.to_s.downcase == verb
         end
       end
+
+      def keep_alive?
+        headers["Connection"].to_s.downcase == "keep-alive"
+      end
     end
   end
 end

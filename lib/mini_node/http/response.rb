@@ -54,7 +54,8 @@ module MiniNode
         511 => "Network Authentication Required"
       }
 
-      def initialize(client)
+      def initialize(request, client)
+        @request = request
         @client = client
       end
 
@@ -75,14 +76,14 @@ module MiniNode
       end
 
       def close
-        @client.close
+        @client.close unless @request.keep_alive?
       end
 
       private
 
       def default_headers
         {
-          "Connection": "close",
+          "Connection": @request.keep_alive? ? "Keep-Alive" : "close",
           "Date": Time.now.gmtime.strftime("%a, %e %b %Y %H:%M:%S %Z")
         }
       end

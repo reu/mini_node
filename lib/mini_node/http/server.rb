@@ -27,7 +27,7 @@ module MiniNode
           end
 
           parser.on_message_complete = proc do |env|
-            response = Response.new(client)
+            response = Response.new(request, client)
             emit(:request, request, response)
           end
 
