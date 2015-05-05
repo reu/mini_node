@@ -11,7 +11,7 @@ module MiniNode
     def handle_read
       data = @fd.read_nonblock(@chunk_size)
       emit(:data, data)
-    rescue EOFError, IOError
+    rescue EOFError, IOError, Errno::ECONNRESET
       close unless @fd.closed?
     end
 
@@ -51,7 +51,7 @@ module MiniNode
 
     def close_fd
       emit(:close)
-      @fd.close
+      @fd.close unless @fd.closed?
     end
   end
 end
