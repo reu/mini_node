@@ -16,18 +16,16 @@ module MiniNode
     end
 
     def handle_write
-      write(@write_buffer) if !@write_buffer.empty?
+      write_to_fd(@write_buffer) if !@write_buffer.empty?
     end
 
     def write(data)
-      bytes_written = @fd.write_nonblock(data)
-      @write_buffer = data[bytes_written..-1]
-      emit(:drain) if @write_buffer == ""
-    rescue Errno::EAGAIN, Errno::EPIPE
+      @write_buffer << data
+      write_to_fd(@write_buffer)
     end
 
     def close
-      @write_buffer == "" ? close_fd : once(:drain) { close_fd }
+      @write_buffer.empty? ? close_fd : once(:drain) { close_fd }
     end
 
     def pipe(stream)
@@ -52,6 +50,13 @@ module MiniNode
     def close_fd
       emit(:close)
       @fd.close unless @fd.closed?
+    end
+
+    def write_to_fd(data)
+      bytes_written = @fd.write_nonblock(data)
+      @write_buffer = data[bytes_written..-1]
+      emit(:drain) if @write_buffer.empty?
+    rescue Errno::EAGAIN, Errno::EPIPE, Errno::ECONNRESET
     end
   end
 end
