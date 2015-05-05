@@ -5,7 +5,7 @@ require "mini_node"
 require "mini_node/http"
 
 MiniNode::Reactor.loop do |reactor|
-  server = MiniNode::HTTP::Server.new(reactor.listen("0.0.0.0", ENV.fetch("PORT", 4000)))
+  server = MiniNode::HTTP::Server.new(reactor.listen("0.0.0.0", ENV.fetch("PORT", 4000).to_i))
 
   server.on(:request) do |req, res|
     if req.get? || req.head?
