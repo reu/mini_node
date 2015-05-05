@@ -13,6 +13,7 @@ module MiniNode
         case stream
         when Server
           @selector.register(stream, :r)
+          stream.on(:accept) { |connection| monitor(connection) }
         when Stream
           @selector.register(stream, :rw)
         end

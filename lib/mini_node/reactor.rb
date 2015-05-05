@@ -15,11 +15,6 @@ module MiniNode
     def listen(host, port)
       server = Server.new(TCPServer.new(host, port))
       monitor(server)
-
-      server.on(:accept) do |client|
-        monitor(client)
-      end
-
       server
     end
 
@@ -39,6 +34,7 @@ module MiniNode
       case stream
       when Server
         register(stream, group: @reading)
+        stream.on(:accept) { |connection| monitor(connection) }
       when Stream
         register(stream, group: @reading)
         register(stream, group: @writing)
