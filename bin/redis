@@ -7,11 +7,11 @@ require "mini_node/redis/client"
 MiniNode::Reactor.loop do |reactor|
   client = MiniNode::Redis::Client.new(reactor.connect("localhost", 6379))
 
-  client.set("mini_node", "cool") do
-    client.get("mini_node") do |before|
-      client.del("mini_node") do
-        client.get("mini_node") do |after|
-          puts "MiniNode was #{before}, now it is #{after || "nothing"}"
+  client.set("mini_node", "ruby") do
+    client.set("node", "javascript") do
+      client.get("mini_node") do |mini_node|
+        client.get("node") do |node|
+          puts "MiniNode is written in #{mini_node}, and Node in #{node}"
         end
       end
     end
