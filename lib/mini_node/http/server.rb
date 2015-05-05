@@ -1,6 +1,7 @@
 require "http/parser"
 
 require "mini_node/event_emitter"
+require "mini_node/http/headers"
 require "mini_node/http/request"
 require "mini_node/http/response"
 
@@ -19,7 +20,7 @@ module MiniNode
           parser.on_headers_complete = proc do
             request.verb = parser.http_method
             request.path = parser.request_url
-            request.headers = parser.headers
+            request.headers = Headers.from_hash(parser.headers)
           end
 
           parser.on_body = proc do |chunk|
