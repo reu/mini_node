@@ -5,3 +5,4 @@ gemspec
 gem "pry"
 gem "redis"
 gem "nio4r"
+gem "facter"

@@ -11,6 +11,7 @@ module MiniNode
     def handle_read
       connection = Stream.new(@socket.accept_nonblock)
       emit(:accept, connection)
+    rescue IO::EAGAINWaitReadable
     end
 
     def handle_write

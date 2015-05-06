@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "facter"
+require "mini_node/reactor"
+require "mini_node/http"
+
+worker_count = ENV.fetch("WORKERS", Facter.value("processors")["count"]).to_i
+queue_size = ENV.fetch("QUEUE", 50).to_i
+
+socket = TCPServer.new("0.0.0.0", ENV.fetch("PORT", 4000).to_i)
+socket.listen(worker_count * queue_size)
+acceptor = MiniNode::Server.new(socket)
+
+trap("EXIT") { acceptor.close }
+
+$PROGRAM_NAME = "MiniNode HTTP Server Master"
+
+worker_count.times do |n|
+  fork do
+    trap("INT") { exit }
+
+    $PROGRAM_NAME = "MiniNode HTTP Server Worker #{n + 1}"
+
+    MiniNode::Reactor.loop do |reactor|
+      puts "Worker #{n + 1} started"
+      reactor.monitor(acceptor)
+
+      server = MiniNode::HTTP::Server.new(acceptor)
+
+      server.on(:request) do |req, res|
+        if req.get? || req.head?
+          path = File.join(File.dirname(__FILE__), req.path)
+
+          if File.exist? path
+            file = reactor.open(path)
+
+            res.write_head(200, {
+              "Content-Type" => file.content_type || "application/octet-stream",
+              "Content-Length" => file.size
+            })
+
+            req.get? ? file.pipe(res) : res.close
+          else
+            res.write_head(404).close
+          end
+        else
+          res.write_head(405).close
+        end
+      end
+    end
+  end
+end
+
+trap("INT") { Process.waitall && exit }
+
+Process.waitall
